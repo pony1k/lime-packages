@@ -238,7 +238,8 @@ function network.scandevices()
 			           "and marking %s as nobridge", dev, rawif )
 		end
 		--! With DSA, the LAN ports are not anymore eth0.1 but lan1, lan2...
-		if dev:match("^lan%d+$") then
+		--! or just lan.
+		if dev:match("^lan%d*$") then
 			local lower_if_path = utils.unsafe_shell("ls -d /sys/class/net/" .. dev .. "/lower*")
 			local lower_if_table = utils.split(lower_if_path, "_")
 			local lower_if = lower_if_table[#lower_if_table]:gsub("\n", "")
@@ -329,6 +330,11 @@ function network.scandevices()
 
 	--! Scrape plain ethernet devices from /sys/class/net/
 	local stdOut = io.popen("ls -1 /sys/class/net/ | grep -x 'eth[0-9][0-9]*'")
+	for dev in stdOut:lines() do dev_parser(dev) end
+	stdOut:close()
+
+	--! Scrape DSA switch ports from /sys/class/net/
+	local stdOut = io.popen("ls -1 /sys/class/net/ | grep -x 'lan[0-9]*'")
 	for dev in stdOut:lines() do dev_parser(dev) end
 	stdOut:close()
 
