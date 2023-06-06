@@ -53,6 +53,12 @@ for iface in $(grep interface /var/etc/babeld.conf | awk '{print $2}'); do
 		awk '{if ($3 == "from") print substr($4, 1, length($4)-1)'"\"%${iface}\""'}'
 done | sort -u -r)"
 
+bmx7CanditateAddresses="$(
+for iface in $(uci show bmx7 | grep bmx7\.*\.dev= | awk -F"=" '{print $2}' | tr -d \'); do
+	ping -i 0.1 -c 2 ff02::1%${iface} 2> /dev/null | \
+		awk '{if ($3 == "from") print substr($4, 1, length($4)-1)'"\"%${iface}\""'}'
+done | sort -u -r)"
+
 wifi_get_macs="
 wireless = require('lime.wireless')
 iwinfo = require('iwinfo')
